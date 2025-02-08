@@ -23,14 +23,14 @@ The system is built using **FastAPI** and offers three key endpoints:
 - **Request:**  
   ```json
   {
-    "image_url": "https://example.com/product-image.jpg"
+    "image_url": ["https://example.com/product-image.jpg",""https://example.com/product-image2.jpg""]
   }
   ```
 - **Response:**
 
 ```json
 {
-  "colors": ["Red", "Blue", "Black"]
+  "colors": ["#4s4d6s", "#0c0c0c"]
 }
 ```
 ### 2️⃣ **Generate Product Name**
@@ -39,14 +39,13 @@ The system is built using **FastAPI** and offers three key endpoints:
 - **Request:**
 ```json
 {
-  "image_url": "https://example.com/product-image.jpg",
-  "colors": ["Red", "Blue", "Black"]
+  "image_url": ["https://example.com/product-image.jpg"]
 }
 ```
 - **Response:**
 ```json
 {
-  "product_name": "Elegant Red & Blue Sneakers"
+  "product_name": "[Your brand name] Elegant Red & Blue Sneakers"
 }
 ```
 ### 3️⃣ **Generate Detailed Product Description**
@@ -55,8 +54,9 @@ The system is built using **FastAPI** and offers three key endpoints:
 - **Request:**
 ```json
 {
-  "image_url": "https://example.com/product-image.jpg",
-  "product_name": "Elegant Red & Blue Sneakers"
+  "image_url": ["https://example.com/product-image.jpg"],
+  "product_name": "Elegant Red & Blue Sneakers",
+  "colors": ["#4s4d6s"]
 }
 ```
 - **Response:**
