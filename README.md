@@ -75,11 +75,16 @@ cd Motager-AI-Product-Helper
 ```sh
 pip install -r requirements.txt
 ```
-3.**Run the FastAPI Server**
+4.**🔑 Setting Up API Key**
+   **1. Create a `.env` file in the root directory.**
+   **2. Add your API key in this format:**
+        API_KEY=your_api_key_here
+        
+4.**Run the FastAPI Server**
 ```sh
 uvicorn main:app --reload
 ```
-4.**Access API Documentation**
+5.**Access API Documentation**
 Open your browser and go to:
 **📌 Swagger UI: http://127.0.0.1:8000/docs**
 
