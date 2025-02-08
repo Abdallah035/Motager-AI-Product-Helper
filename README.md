@@ -29,7 +29,6 @@ The system is built using **FastAPI** and offers three key endpoints:
 - **Response:**
 
 ```json
-Copy
 {
   "colors": ["Red", "Blue", "Black"]
 }
@@ -39,7 +38,6 @@ Copy
 - **Description:** `Generates a relevant product name based on the extracted colors and image content.`
 - **Request:**
 ```json
-Copy
 {
   "image_url": "https://example.com/product-image.jpg",
   "colors": ["Red", "Blue", "Black"]
@@ -47,7 +45,6 @@ Copy
 ```
 - **Response:**
 ```json
-Copy
 {
   "product_name": "Elegant Red & Blue Sneakers"
 }
@@ -57,7 +54,6 @@ Copy
 - **Description:** `Creates a detailed and engaging product description based on the image and extracted features.`
 - **Request:**
 ```json
-Copy
 {
   "image_url": "https://example.com/product-image.jpg",
   "product_name": "Elegant Red & Blue Sneakers"
@@ -65,7 +61,6 @@ Copy
 ```
 - **Response:**
 ```json
-Copy
 {
   "description": "Step out in style with these Elegant Red & Blue Sneakers. Designed for comfort and durability, they feature a lightweight build and a trendy design. Perfect for casual wear or sports activities!"
 }
@@ -73,18 +68,15 @@ Copy
 ### 🛠 **Setup & Installation**
 1.**Clone the Repository**
 ```sh
-Copy
 git clone https://github.com/Abdallah035/Motager-AI-Product-Helper.git
 cd Motager-AI-Product-Helper
 ```
 2.**Install Dependencies**
 ```sh
-Copy
 pip install -r requirements.txt
 ```
 3.**Run the FastAPI Server**
 ```sh
-Copy
 uvicorn main:app --reload
 ```
 4.**Access API Documentation**
