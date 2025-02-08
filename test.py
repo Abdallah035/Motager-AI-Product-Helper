@@ -9,7 +9,7 @@ API_KEY = os.getenv("API_KEY")
 if not API_KEY:
     raise ValueError("API_KEY not set. Please configure your .env file or system environment.")
 
-image_path_list = ['images_test/test/27.jpg']
+image_path_list = ['test/27.jpg']
 # product_name = generate_product_name(image_path_list)
 # print(product_name)
 # color_list = extract_colors(image_path_list)
