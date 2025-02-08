@@ -76,11 +76,11 @@ cd Motager-AI-Product-Helper
 pip install -r requirements.txt
 ```
 3.**🔑 Setting Up API Key**
-      ```sh
+ ```sh
       1. Create a `.env` file in the root directory.
       2. Add your API key in this format:
          API_KEY=your_api_key_here
-      ``` 
+  ``` 
 4.**Run the FastAPI Server**
 ```sh
 uvicorn main:app --reload
