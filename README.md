@@ -25,78 +25,77 @@ The system is built using **FastAPI** and offers three key endpoints:
   {
     "image_url": "https://example.com/product-image.jpg"
   }
-Response:
+  ```
+- **Response:**
 
-json
+```json
 Copy
 {
   "colors": ["Red", "Blue", "Black"]
 }
+```
 ### 2️⃣ **Generate Product Name**
 - **Endpoint:** `POST /generate-product-name`
 - **Description:** `Generates a relevant product name based on the extracted colors and image content.`
 - **Request:**
-
-json
+```json
 Copy
 {
   "image_url": "https://example.com/product-image.jpg",
   "colors": ["Red", "Blue", "Black"]
 }
-Response:
-
-json
+```
+- **Response:**
+```json
 Copy
 {
   "product_name": "Elegant Red & Blue Sneakers"
 }
-3️⃣ Generate Detailed Product Description
-Endpoint: POST /generate-product-description
-
-Description: Creates a detailed and engaging product description based on the image and extracted features.
-
-Request:
-
-json
+```
+### 3️⃣ **Generate Detailed Product Description**
+- **Endpoint:** `POST /generate-product-description`
+- **Description:** `Creates a detailed and engaging product description based on the image and extracted features.`
+- **Request:**
+```json
 Copy
 {
   "image_url": "https://example.com/product-image.jpg",
   "product_name": "Elegant Red & Blue Sneakers"
 }
-Response:
-
-json
+```
+- **Response:**
+```json
 Copy
 {
   "description": "Step out in style with these Elegant Red & Blue Sneakers. Designed for comfort and durability, they feature a lightweight build and a trendy design. Perfect for casual wear or sports activities!"
 }
-🛠 Setup & Installation
-Clone the Repository
-
-sh
+```
+### 🛠 **Setup & Installation**
+1.**Clone the Repository**
+```sh
 Copy
 git clone https://github.com/Abdallah035/Motager-AI-Product-Helper.git
 cd Motager-AI-Product-Helper
-Install Dependencies
-
-sh
+```
+2.**Install Dependencies**
+```sh
 Copy
 pip install -r requirements.txt
-Run the FastAPI Server
-
-sh
+```
+3.**Run the FastAPI Server**
+```sh
 Copy
 uvicorn main:app --reload
-Access API Documentation
+```
+4.**Access API Documentation**
 Open your browser and go to:
+**📌 Swagger UI: http://127.0.0.1:8000/docs**
 
-📌 Swagger UI: http://127.0.0.1:8000/docs
+**📌 Redoc UI: http://127.0.0.1:8000/redoc**
 
-📌 Redoc UI: http://127.0.0.1:8000/redoc
+### 🏆 **Why Use Motager AI Product Generator?**
+**✔ Saves Time: Automates product listing and content generation.**
 
-🏆 Why Use Motager AI Product Generator?
-✔ Saves Time: Automates product listing and content generation.
+**✔ Improves Accuracy: AI ensures relevant and engaging descriptions.**
 
-✔ Improves Accuracy: AI ensures relevant and engaging descriptions.
-
-✔ Easy Integration: FastAPI backend allows seamless API access.
+**✔ Easy Integration: FastAPI backend allows seamless API access.**
