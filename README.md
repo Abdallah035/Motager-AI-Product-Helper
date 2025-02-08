@@ -23,7 +23,7 @@ The system is built using **FastAPI** and offers three key endpoints:
 - **Request:**  
   ```json
   {
-    "image_url": ["https://example.com/product-image.jpg",""https://example.com/product-image2.jpg""]
+    "image_url": ["https://example.com/product-image.jpg","https://example.com/product-image2.jpg"]
   }
   ```
 - **Response:**
