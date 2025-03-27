@@ -1,62 +1,53 @@
 from PIL import Image
 from rembg import remove
 import numpy as np
-import matplotlib.pyplot as plt
-import io
+import requests
+from io import BytesIO
 from sklearn.cluster import KMeans
-import os
+from concurrent.futures import ThreadPoolExecutor
 
-def remove_background_and_get_mask(image_path):
-    # Set a custom directory for cached files
-    os.environ["XDG_CACHE_HOME"] = "models/u2net.onnx"
-    input_image = Image.open(image_path)
-    output_image = remove(input_image)
-    if output_image.mode == 'RGBA':
-        mask = np.array(output_image)[:, :, 3] > 0
-    else:
-        mask = np.ones(output_image.size[::-1], dtype=bool)
+
+def download_image(image_url):
+    try:
+        response = requests.get(image_url, stream=True, timeout=5)
+        response.raise_for_status()
+        return Image.open(BytesIO(response.content)).convert("RGBA")
+    except requests.exceptions.RequestException as e:
+        raise ValueError(f"Error downloading image: {e}")
+
+
+def load_image(image_path_or_url):
+    return download_image(image_path_or_url) if image_path_or_url.startswith("http") else Image.open(image_path_or_url).convert("RGBA")
+
+
+def process_image(image):
+    output_image = remove(image)
+    mask = np.array(output_image)[:, :, 3] > 0 if output_image.mode == 'RGBA' else np.ones(output_image.size[::-1], dtype=bool)
     return output_image, mask
 
 
-def get_product_colors(image, mask, color_count=5):
-    # Convert image to numpy array
+def extract_dominant_colors(image, mask, color_count=2):
     img_array = np.array(image)
-    # Get only product pixels using mask
-    if img_array.shape[-1] == 4:  # RGBA
-        product_pixels = img_array[mask][:, :3]
-    else:  # RGB
-        product_pixels = img_array[mask]
-    # Remove any fully transparent or black pixels
-    valid_pixels = product_pixels[np.any(product_pixels != [0, 0, 0], axis=1)]
-    if len(valid_pixels) == 0:
-        raise ValueError("No valid product pixels found")
-    kmeans = KMeans(n_clusters=color_count, random_state=42, n_init=10)
-    kmeans.fit(valid_pixels)
-    colors = kmeans.cluster_centers_.astype(int)
-    labels = kmeans.labels_
-    unique_labels, counts = np.unique(labels, return_counts=True)
-    frequencies = counts / len(labels)
-    sorted_indices = np.argsort(frequencies)[::-1]
-    sorted_colors = colors[sorted_indices]
-    sorted_frequencies = frequencies[sorted_indices]
+    product_pixels = img_array[mask][:, :3] if img_array.shape[-1] == 4 else img_array[mask]
 
-    return sorted_colors, sorted_frequencies
+    if len(product_pixels) == 0:
+        return None  # No valid pixels found
+
+    kmeans = KMeans(n_clusters=color_count, random_state=42, n_init="auto")  # Auto-tuned for efficiency
+    kmeans.fit(product_pixels)
+    return ['#{:02x}{:02x}{:02x}'.format(*map(int, color)) for color in kmeans.cluster_centers_]
 
 
-def rgb_to_hex(color):
-    return '#{:02x}{:02x}{:02x}'.format(*color)
+def process_single_image(image_path_or_url, color_count):
+    try:
+        image = load_image(image_path_or_url)
+        processed_image, mask = process_image(image)
+        return extract_dominant_colors(processed_image, mask, color_count)[0]  # Return first dominant color
+    except Exception as e:
+        print(f"Error processing image {image_path_or_url}: {e}")
+        return None
 
 
 def extract_colors(images_list, color_count=2):
-    color_list = []
-    for image_path in images_list:
-        try:
-            processed_image, product_mask = remove_background_and_get_mask(image_path)
-            colors, freq = get_product_colors(processed_image, product_mask, color_count)
-            dominant_color = rgb_to_hex(colors[0])
-            color_list.append(dominant_color)
-        except Exception as e:
-            print(f"Error processing image {image_path}: {e}")
-            color_list.append(None)
-
-    return color_list
+    with ThreadPoolExecutor() as executor:
+        return list(executor.map(lambda img: process_single_image(img, color_count), images_list))
