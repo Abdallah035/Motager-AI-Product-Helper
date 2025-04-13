@@ -11,6 +11,8 @@ from dotenv import load_dotenv
 from Generate_caption import load_model_from_path, tokenizer_load
 from Color_extraction import extract_colors
 from Generate_productName_description import generate_product_name, generate_description, clean_response
+from huggingface_hub import hf_hub_download
+import tempfile
 
 app = FastAPI()
 
@@ -29,28 +31,62 @@ API_KEY = os.getenv("API_KEY")
 if not API_KEY:
     raise ValueError("API_KEY not set. Please configure your .env file or system environment.")
 
-# Ensure ONNX model path is set
-os.environ["XDG_CACHE_HOME"] = "models/u2net.onnx"
-
 # Global variables for models and ThreadPool
 vgg16_model = None
 fifth_version_model = None
 tokenizer = None
 executor = ThreadPoolExecutor(max_workers=4)
 
+# Ensure ONNX model path is set
+os.environ["XDG_CACHE_HOME"] = "models/u2net.onnx"
+
+async def download_model_from_hf(repo_id: str, filename: str) -> str:
+    try:
+        # Create a temporary directory for model files
+        model_dir = os.path.join(tempfile.gettempdir(), "hf_models")
+        os.makedirs(model_dir, exist_ok=True)
+
+        # Download model
+        model_path = hf_hub_download(
+            repo_id=repo_id,
+            filename=filename,
+            cache_dir=model_dir,
+            local_dir=model_dir,
+            force_download=True
+        )
+        print(f"Downloaded {filename} to {model_path}")
+        return model_path
+    except Exception as e:
+        print(f"Error downloading {filename}: {str(e)}")
+        raise
+
 
 async def load_models():
     global vgg16_model, fifth_version_model, tokenizer
     if not all([vgg16_model, fifth_version_model, tokenizer]):
-        print("Loading models...")
-        vgg16_task = asyncio.to_thread(load_model_from_path, 'models/vgg16_feature_extractor.keras')
-        fifth_version_task = asyncio.to_thread(load_model_from_path, 'models/fifth_version_model.keras')
-        tokenizer_task = asyncio.to_thread(tokenizer_load, 'models/tokenizer.pkl')
+        print("Downloading and loading models from Hugging Face Hub...")
 
-        vgg16_model, fifth_version_model, tokenizer = await asyncio.gather(
-            vgg16_task, fifth_version_task, tokenizer_task
-        )
-        print("Models loaded successfully!")
+        try:
+            # Download models in parallel
+            vgg16_path, model_path, tokenizer_path = await asyncio.gather(
+                download_model_from_hf("abdallah-03/AI_product_helper_models", "vgg16_feature_extractor.keras"),
+                download_model_from_hf("abdallah-03/AI_product_helper_models", "fifth_version_model.keras"),
+                download_model_from_hf("abdallah-03/AI_product_helper_models", "tokenizer.pkl")
+            )
+
+            # Load models using the downloaded paths
+            vgg16_task = asyncio.to_thread(load_model_from_path, vgg16_path)
+            fifth_version_task = asyncio.to_thread(load_model_from_path, model_path)
+            tokenizer_task = asyncio.to_thread(tokenizer_load, tokenizer_path)
+
+            vgg16_model, fifth_version_model, tokenizer = await asyncio.gather(
+                vgg16_task, fifth_version_task, tokenizer_task
+            )
+            print("Models loaded successfully!")
+
+        except Exception as e:
+            print(f"Error loading models: {str(e)}")
+            raise
 
 
 @app.on_event("startup")
@@ -99,6 +135,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         content={"success": False, "message": "Validation Error", "errors": exc.errors()},
     )
 
+
 # Endpoints
 @app.get("/")
 async def read_root():
@@ -108,8 +145,24 @@ async def read_root():
 @app.get("/status/")
 async def check_status():
     if all([vgg16_model, fifth_version_model, tokenizer]):
-        return {"success": True, "message": "Models are ready!"}
-    return {"success": False, "message": "Models are still loading..."}
+        return {
+            "success": True,
+            "message": "Models are ready!",
+            "models_loaded": {
+                "vgg16": vgg16_model is not None,
+                "fifth_version": fifth_version_model is not None,
+                "tokenizer": tokenizer is not None
+            }
+        }
+    return {
+        "success": False,
+        "message": "Models are still loading...",
+        "models_loaded": {
+            "vgg16": vgg16_model is not None,
+            "fifth_version": fifth_version_model is not None,
+            "tokenizer": tokenizer is not None
+        }
+    }
 
 
 @app.post("/extract-colors/")
